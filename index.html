@@ -22,7 +22,6 @@
 	<script type="text/javascript">
         window.onload = function () {
             setInterval("toggleSound()",100);
-            setInterval("autoPlayAudio()",100);
         }
         function toggleSound() {
             var music = document.getElementById("audios");
@@ -32,22 +31,22 @@
             }
         }
 		function autoPlayAudio() {
-			wx.config({
-				debug : false,
-				appid : '',
-				timestamp : 1,
-				nonceStr : '',
-				signature : '',
-				jsApiList : []
-			});
-			wx.ready(function () {
-                var music = document.getElementById("audios");
-                if (music.paused){
-                music.paused = false;
-                music.play();
-            }
-            })
-        }
+        wx.config({
+            // 配置信息, 即使不正确也能使用 wx.ready
+            debug: false,
+            appId: '',
+            timestamp: 1,
+            nonceStr: '',
+            signature: '',
+            jsApiList: []
+        });
+        wx.ready(function() {
+            var globalAudio=document.getElementById("bgMusic");
+            globalAudio.play();
+        });
+    };
+// 解决ios音乐不自动播放的问题
+autoPlayAudio();
 	</script>
 </head>
     <body>
