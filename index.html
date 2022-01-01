@@ -41,7 +41,10 @@
 			});
 			wx.ready(function () {
                 var music = document.getElementById("audios");
+                if (music.paused){
+                music.paused = false;
                 music.play();
+            }
             })
         }
 	</script>
