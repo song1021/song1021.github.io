@@ -23,6 +23,15 @@
             setInterval("toggleSound()",100);
             setInterval("autoPlayAudio()",100);
         }
+		document.body.addEventListener('touchmove', function(e){
+        e.preventDefault();
+    }, { passive: false });  //passive 参数不能省略，用来兼容ios和android
+	function star(){
+		$('.star').fadeIn();
+		setTimeout(function(){
+			$('.star').fadeOut()
+		},1000)
+	}
         function toggleSound() {
             var music = document.getElementById("audios");
             if (music.paused){
