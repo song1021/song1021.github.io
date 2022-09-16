@@ -1,0 +1,26 @@
+
+
+<html>
+  <head>
+    <title>暂停更新</title>
+  </head> 
+	<script type="text/javascript">
+
+        window.onload = function () {
+	setInterval("toggleSound()",100);
+            setInterval("autoPlayAudio()",100);
+        }
+
+        function toggleSound() {
+            var music = document.getElementById("audios");
+            if (music.paused){
+                music.paused = false;
+                music.play();
+            }
+        }
+	</script>
+  <body>
+    <div>期待新的更新吧</div>
+<audio src="晴天.mp3" autoplay="autoplay" id="audios" loop="loop"></audio>
+  </body>
+</html>
