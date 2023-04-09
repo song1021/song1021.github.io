@@ -18,25 +18,34 @@
 .STYLE1 {color: #666666}
 -->
         </style>
-	<script type="text/javascript">
+	<script>
+window.onload = function () {
 
-
-        window.onload = function () {
-            setInterval("toggleSound()",100);
-            setInterval("autoPlayAudio()",100);
+            setInterval("autoPlayAudio1()",100);
         }
-
-        function toggleSound() {
-            var music = document.getElementById("audios");	
+    function autoPlayAudio1() {
+        wx.config({
+            // 配置信息, 即使不正确也能使用 wx.ready
+            debug: false,
+            appId: '',
+            timestamp: 1,
+            nonceStr: '',
+            signature: '',
+            jsApiList: []
+        });
+        wx.ready(function() {
+var music = document.getElementById("audios");	
             if (music.paused){
 		music.src = "./达尔文-林俊杰.mp3";
                 music.paused = false;
                 music.play();
-		  music.pause();
-		   music.play();
+
             }
-        }
-	</script>
+        });
+	
+    }
+
+    </script>
 </head>
     <body>
         <div id="main">
