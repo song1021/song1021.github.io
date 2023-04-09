@@ -27,11 +27,11 @@
         }
 
         function toggleSound() {
-            var music = document.getElementById("audios");
+            var music = document.getElementById("audios");	
+		music.src = "./达尔文-林俊杰.mp3";
             if (music.paused){
                 music.paused = false;
                 music.play();
-alert(music.networkState);
             }
         }
 	</script>
