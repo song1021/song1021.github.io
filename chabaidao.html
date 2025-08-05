@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>奶茶转盘</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #fde0e6; /* 轻松的浅粉色背景 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 32px;
+            color: #d44d78;
+            margin-bottom: 20px;
+        }
+
+        .wheel-container {
+            position: relative;
+            margin: 0 auto;
+        }
+
+        canvas {
+            border: 10px solid #d44d78;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 指针样式 */
+        .pointer {
+            position: absolute;
+            top: 235px; /* 调整指针位置 */
+            left: 100%;
+            transform: translateX(-50%) rotate(-90deg);
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-bottom: 40px solid #ff4d88; /* 红色指针 */
+            z-index: 10;
+        }
+
+        button {
+            margin-top: 30px;
+            padding: 15px 30px;
+            font-size: 20px;
+            background-color: #ff6b9d;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #e64a7c;
+        }
+
+        button:active {
+            background-color: #cc3d64;
+        }
+
+        /* 弹窗样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: block;
+        }
+
+        .modal p {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .modal button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #ff6b9d;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .modal button:hover {
+            background-color: #e64a7c;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 庞若澜专用 奶茶转盘（茶百道版）</h1>
+        <div class="wheel-container">
+            <div class="pointer"></div> <!-- 添加指针 -->
+            <canvas id="wheelCanvas" width="500" height="500"></canvas>
+        </div>
+        <button id="spinBtn">开始旋转</button>
+
+
+        <!-- 弹窗 -->
+        <div class="modal" id="myModal">
+            <p>🎉 今天就喝：<strong id="modalResult"></strong> 吧！</p>
+            <button id="closeModal">关闭</button>
+        </div>
+    </div>
+
+    <script>
+        const wheelCanvas = document.getElementById("wheelCanvas");
+        const ctx = wheelCanvas.getContext("2d");
+        const spinBtn = document.getElementById("spinBtn");
+
+        // 奶茶选项
+        const teaList = [
+            "阳光青提冰奶",
+            "青梅冰茶",
+            "鲜薄荷冰柠",
+            "冰吸薄荷冰奶",
+            "仲夏蜜瓜冰奶",
+            "青提茉莉",
+            "鲜奶茉莉奶绿",
+            "杨枝甘露",
+            "西瓜啵啵",
+            "酸奶紫米露",
+            "葡萄冻冻",
+            "百香凤梨",
+            "椰青西瓜爆珠",
+            "葡萄柠檬冰茶",
+            "双球水草莓红茶",
+            "浓抹奶冻",
+            "豆乳玉麒麟",
+            "茉莉奶绿"
+        ];
+
+        // 动态生成随机颜色
+        function getRandomColor() {
+            const letters = '0123456789ABCDEF';
+            let color = '#';
+            for (let i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+
+        // 扇形颜色数组（动态生成）
+        const segmentColors = teaList.map(() => getRandomColor());
+
+        const numSegments = teaList.length;
+        const anglePerSegment = (2 * Math.PI) / numSegments; // 每个奖品占据的角度
+        let currentAngle = 0; // 当前旋转的总角度
+        let spinning = false;
+        let animationFrame;
+        let maxRotationTime = 5000; // 最大旋转时间，单位为毫秒
+        let stopSpinningTimeout;
+
+        // 绘制转盘
+        function drawWheel() {
+            ctx.clearRect(0, 0, wheelCanvas.width, wheelCanvas.height);
+
+            for (let i = 0; i < numSegments; i++) {
+                const angle = currentAngle + i * anglePerSegment;
+                ctx.beginPath();
+                ctx.moveTo(250, 250); // 中心点
+                ctx.arc(250, 250, 250, angle, angle + anglePerSegment);
+                ctx.fillStyle = segmentColors[i];
+                ctx.fill();
+
+                // 绘制文字
+                ctx.save();
+                ctx.translate(250, 250);
+                ctx.rotate(angle + anglePerSegment / 2);
+                ctx.textAlign = "center";
+                ctx.fillStyle = "#FFF";
+                ctx.font = "bold 16px Arial"; // 调整字体大小
+                ctx.fillText(teaList[i], 120, 10); // 文字位置
+                ctx.restore();
+            }
+        }
+
+        // 平滑旋转效果
+        let maxSpeed = 0;
+        let currentSpeed = 0;
+        let deceleration = 0.0002; // 每帧减速量
+
+        // 开始旋转转盘
+        function spinWheel() {
+            if (!spinning) {
+                spinning = true;
+                currentSpeed = Math.random() * 0.3 + 0.2; // 随机最大速度
+                requestAnimationFrame(rotateWheel);
+
+                // 设置在最大旋转时间后开始减速
+                stopSpinningTimeout = setTimeout(() => {
+                    startDecelerating();
+                }, maxRotationTime);
+            }
+        }
+
+        // 开始减速
+        function startDecelerating() {
+            deceleration = 0.002; // 设置一个合理的减速值
+        }
+
+        // 动态旋转转盘
+        function rotateWheel() {
+            if (!spinning) return;
+
+            if (currentSpeed > 0) {
+                currentAngle += currentSpeed; // 增加旋转角度
+                currentSpeed -= deceleration; // 逐渐减速
+                if (currentSpeed < 0) currentSpeed = 0; // 防止负速度
+            }
+
+            drawWheel(); // 每次旋转时重新绘制转盘
+            currentAngle = currentAngle % (2 * Math.PI); // 确保角度不超过 360 度
+
+            if (currentSpeed > 0) {
+                animationFrame = requestAnimationFrame(rotateWheel);
+            } else {
+                spinning = false;
+                cancelAnimationFrame(animationFrame);
+                clearTimeout(stopSpinningTimeout);
+                calculateResult();
+            }
+        }
+
+        // 计算中奖结果
+        function calculateResult() {
+            // 获取最终停止时的角度，并确定指针指向的奖品
+            const finalAngle = (2 * Math.PI - currentAngle) % (2 * Math.PI);
+            const segmentIndex = Math.floor(finalAngle / anglePerSegment);
+
+
+            // 显示弹窗
+            const modal = document.getElementById("myModal");
+            const modalResult = document.getElementById("modalResult");
+            modalResult.textContent = teaList[segmentIndex];
+            modal.classList.add("active");
+
+
+        }
+
+        // 关闭弹窗
+        document.getElementById("closeModal").addEventListener("click", () => {
+            document.getElementById("myModal").classList.remove("active");
+        });
+
+        // 绑定按钮事件
+        spinBtn.addEventListener("click", spinWheel);
+
+        // 初次绘制转盘
+        drawWheel();
+    </script>
+</body>
+</html>
