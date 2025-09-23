@@ -212,6 +212,55 @@
                 align-self: flex-start;
             }
         }
+        /* 路线图按钮样式 */
+        .map-button {
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            margin: 20px 0;
+            transition: background-color 0.3s;
+            display: block;
+            width: fit-content;
+            margin: 0 auto;
+        }
+        .map-button:hover {
+            background-color: #3a7bc8;
+        }
+        /* 模态框 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.9);
+        }
+        /* 模态框内容 */
+        .modal-content {
+            margin: 5% auto;
+            display: block;
+            width: 80%;
+            max-width: 800px;
+            max-height: 80vh;
+            object-fit: contain;
+        }
+        /* 关闭按钮 */
+        .close {
+            position: absolute;
+            top: 15px;
+            right: 35px;
+            color: #f1f1f1;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -244,7 +293,6 @@
                             <span class="location-name">
                                 <i>📍</i> 柳浪闻莺
                             </span>
-                            <span class="time-tag">14:30-15:00</span> <!-- 时间标签 -->
                         </h3>
                         <p>西湖十景之一，位于湖东岸，以垂柳成荫、鸟语花香著称。是进入西湖的绝佳起点，适合拍照、散步。</p>
                     </li>
@@ -253,7 +301,6 @@
                             <span class="location-name">
                                 <i>🚢</i> 西湖游船二公园码头
                             </span>
-                            <span class="time-tag">15:00-15:30</span> <!-- 时间标签 -->
                         </h3>
                         <p>乘坐游船前往小瀛洲（三潭印月），票价70元/人（含上下岛+门票）。建议提前购票，避免排队。</p>
                     </li>
@@ -262,7 +309,6 @@
                             <span class="location-name">
                                 <i>🌙</i> 三潭印月
                             </span>
-                            <span class="time-tag">15:30-16:30</span> <!-- 时间标签 -->
                         </h3>
                         <p>西湖"三潭印月"景观核心，湖中有三座石塔，夜晚月光映照时尤为梦幻。推荐带一张1元纸币合影，与石塔同框超有纪念意义！</p>
                     </li>
@@ -271,7 +317,6 @@
                             <span class="location-name">
                                 <i>🐟</i> 花港观鱼
                             </span>
-                            <span class="time-tag">16:30-17:00</span> <!-- 时间标签 -->
                         </h3>
                         <p>园内有成群锦鲤，可投喂（自带饲料更佳）。春季樱花盛开，景色优美，适合亲子游。</p>
                     </li>
@@ -280,7 +325,6 @@
                             <span class="location-name">
                                 <i>🌷</i> 太子湾公园
                             </span>
-                            <span class="time-tag">17:00-17:30</span> <!-- 时间标签 -->
                         </h3>
                         <p>春天赏花胜地，尤其以郁金香、樱花闻名。公园环境清幽，适合野餐、放松，避开人流高峰最佳。</p>
                     </li>
@@ -289,7 +333,6 @@
                             <span class="location-name">
                                 <i>🗼</i> 雷峰塔
                             </span>
-                            <span class="time-tag">17:30-18:00</span> <!-- 时间标签 -->
                         </h3>
                         <p>白蛇传故事发生地，登塔可俯瞰整个西湖全景。门票约40元，建议傍晚登塔，夕阳西下时景色绝美。</p>
                     </li>
@@ -303,6 +346,8 @@
                         <li>西湖景区较大，建议穿舒适鞋子，携带水和小零食</li>
                     </ul>
                 </div>
+                <!-- 每天一个路线图按钮 -->
+                <button class="map-button" onclick="openMap('day1')">🗺️ 查看路线图</button>
             </div>
             <!-- Day 2 内容 (已更新) -->
             <div class="tab-pane" id="day2">
@@ -316,7 +361,6 @@
                             <span class="location-name">
                                 <i>🏯</i> 灵隐寺
                             </span>
-                            <span class="time-tag">06:30-08:00</span> <!-- 时间标签 -->
                         </h3>
                         <p>中国著名佛教寺庙，飞来峰景区的一部分。清晨六点半开门，人少清净，是祈福和感受禅意的好时机。</p>
                     </li>
@@ -325,7 +369,6 @@
                             <span class="location-name">
                                 <i>🌊</i> 乌龟潭
                             </span>
-                            <span class="time-tag">08:00-08:30</span> <!-- 时间标签 -->
                         </h3>
                         <p>位于灵隐寺旁，是一个宁静的小湖泊，环境清幽，适合短暂休息和欣赏自然风光。</p>
                     </li>
@@ -334,7 +377,6 @@
                             <span class="location-name">
                                 <i>🌾</i> 茅家埠
                             </span>
-                            <span class="time-tag">08:30-09:30</span> <!-- 时间标签 -->
                         </h3>
                         <p>西湖边的原生态村落，保留了传统的江南水乡风貌，适合慢步、喝茶、感受当地生活气息。</p>
                     </li>
@@ -343,7 +385,6 @@
                             <span class="location-name">
                                 <i>🌸</i> 曲院风荷
                             </span>
-                            <span class="time-tag">09:30-10:30</span> <!-- 时间标签 -->
                         </h3>
                         <p>西湖十景之一，夏季荷花盛开时景色最美。即使非花期，园内绿树成荫，环境宜人。</p>
                     </li>
@@ -352,7 +393,6 @@
                             <span class="location-name">
                                 <i>🌉</i> 苏堤
                             </span>
-                            <span class="time-tag">10:30-12:00</span> <!-- 时间标签 -->
                         </h3>
                         <p>长堤横卧西湖，两侧桃柳相间，是西湖最经典的徒步路线之一。可以步行或骑行，风景如画。</p>
                     </li>
@@ -361,7 +401,6 @@
                             <span class="location-name">
                                 <i>⛰️</i> 孤山景区
                             </span>
-                            <span class="time-tag">12:00-13:00</span> <!-- 时间标签 -->
                         </h3>
                         <p>西湖中最大的岛屿，拥有众多文化古迹，如西泠印社、中山公园等，文化底蕴深厚。</p>
                     </li>
@@ -370,7 +409,6 @@
                             <span class="location-name">
                                 <i>🛣️</i> 白堤
                             </span>
-                            <span class="time-tag">13:00-14:00</span> <!-- 时间标签 -->
                         </h3>
                         <p>连接孤山与断桥的长堤，堤上桃柳相间，春日花开时节尤为美丽。是“断桥残雪”的所在地。</p>
                     </li>
@@ -379,7 +417,6 @@
                             <span class="location-name">
                                 <i>🌉</i> 断桥
                             </span>
-                            <span class="time-tag">14:00-14:30</span> <!-- 时间标签 -->
                         </h3>
                         <p>西湖十景之首，因白蛇传而闻名。这里不仅是景点，也是观赏西湖全景的绝佳地点。</p>
                     </li>
@@ -393,6 +430,8 @@
                         <li>此线路步行较多，建议穿着舒适的鞋子，并携带充足的水和防晒用品</li>
                     </ul>
                 </div>
+                <!-- 每天一个路线图按钮 -->
+                <button class="map-button" onclick="openMap('day2')">🗺️ 查看路线图</button>
             </div>
             <!-- Day 3 内容 (预留结构) -->
             <div class="tab-pane" id="day3">
@@ -407,7 +446,6 @@
                             <span class="location-name">
                                 <i>📍</i> 景点名称
                             </span>
-                            <span class="time-tag">00:00-00:00</span> <!-- 时间标签 -->
                         </h3>
                         <p>景点描述内容...</p>
                     </li>
@@ -417,6 +455,8 @@
                     <h3>💡 提示信息</h3>
                     <p>请在此添加Day 3的提示信息</p>
                 </div>
+                <!-- 每天一个路线图按钮 -->
+                <button class="map-button" onclick="openMap('day3')">🗺️ 查看路线图</button>
             </div>
             <!-- Day 4 内容 (新增) -->
             <div class="tab-pane" id="day4">
@@ -431,7 +471,6 @@
                             <span class="location-name">
                                 <i>📍</i> 景点名称
                             </span>
-                            <span class="time-tag">00:00-00:00</span> <!-- 时间标签 -->
                         </h3>
                         <p>景点描述内容...</p>
                     </li>
@@ -441,6 +480,8 @@
                     <h3>💡 提示信息</h3>
                     <p>请在此添加Day 4的提示信息</p>
                 </div>
+                <!-- 每天一个路线图按钮 -->
+                <button class="map-button" onclick="openMap('day4')">🗺️ 查看路线图</button>
             </div>
             <!-- Day 5 内容 (新增) -->
             <div class="tab-pane" id="day5">
@@ -455,7 +496,6 @@
                             <span class="location-name">
                                 <i>📍</i> 景点名称
                             </span>
-                            <span class="time-tag">00:00-00:00</span> <!-- 时间标签 -->
                         </h3>
                         <p>景点描述内容...</p>
                     </li>
@@ -465,6 +505,8 @@
                     <h3>💡 提示信息</h3>
                     <p>请在此添加Day 5的提示信息</p>
                 </div>
+                <!-- 每天一个路线图按钮 -->
+                <button class="map-button" onclick="openMap('day5')">🗺️ 查看路线图</button>
             </div>
             <!-- Day 6 内容 (新增) -->
             <div class="tab-pane" id="day6">
@@ -479,7 +521,6 @@
                             <span class="location-name">
                                 <i>📍</i> 景点名称
                             </span>
-                            <span class="time-tag">00:00-00:00</span> <!-- 时间标签 -->
                         </h3>
                         <p>景点描述内容...</p>
                     </li>
@@ -489,6 +530,8 @@
                     <h3>💡 提示信息</h3>
                     <p>请在此添加Day 6的提示信息</p>
                 </div>
+                <!-- 每天一个路线图按钮 -->
+                <button class="map-button" onclick="openMap('day6')">🗺️ 查看路线图</button>
             </div>
             <!-- Day 7 内容 (新增) -->
             <div class="tab-pane" id="day7">
@@ -503,7 +546,6 @@
                             <span class="location-name">
                                 <i>📍</i> 景点名称
                             </span>
-                            <span class="time-tag">00:00-00:00</span> <!-- 时间标签 -->
                         </h3>
                         <p>景点描述内容...</p>
                     </li>
@@ -513,6 +555,8 @@
                     <h3>💡 提示信息</h3>
                     <p>请在此添加Day 7的提示信息</p>
                 </div>
+                <!-- 每天一个路线图按钮 -->
+                <button class="map-button" onclick="openMap('day7')">🗺️ 查看路线图</button>
             </div>
             <!-- Day 8 内容 (新增) -->
             <div class="tab-pane" id="day8">
@@ -527,7 +571,6 @@
                             <span class="location-name">
                                 <i>📍</i> 景点名称
                             </span>
-                            <span class="time-tag">00:00-00:00</span> <!-- 时间标签 -->
                         </h3>
                         <p>景点描述内容...</p>
                     </li>
@@ -537,11 +580,18 @@
                     <h3>💡 提示信息</h3>
                     <p>请在此添加Day 8的提示信息</p>
                 </div>
+                <!-- 每天一个路线图按钮 -->
+                <button class="map-button" onclick="openMap('day8')">🗺️ 查看路线图</button>
             </div>
         </div>
         <footer>
             <p>📋 本攻略为 <span style="color: #CC3299;">庞若澜</span> 国庆假期旅游专属攻略</p>
         </footer>
+    </div>
+    <!-- 模态框 -->
+    <div id="mapModal" class="modal">
+        <span class="close" onclick="closeMap()">&times;</span>
+        <img class="modal-content" id="mapImg">
     </div>
     <script>
         // 标签切换功能
@@ -560,6 +610,32 @@
                 });
             });
         });
+
+        // 打开模态框并加载对应图片
+        function openMap(day) {
+            var img = document.getElementById('mapImg');
+            var modal = document.getElementById('mapModal');
+            
+            // 设置图片路径，假设图片名为 day1_map.jpg, day2_map.jpg 等
+            img.src = 'hz_img/' + day + '_map.png';
+            
+            // 显示模态框
+            modal.style.display = 'block';
+        }
+
+        // 关闭模态框
+        function closeMap() {
+            var modal = document.getElementById('mapModal');
+            modal.style.display = 'none';
+        }
+
+        // 当用户点击模态框外部时，关闭它
+        window.onclick = function(event) {
+            var modal = document.getElementById('mapModal');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
     </script>
 </body>
 </html>
