@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>猪了个猪 · 小堵版</title>
+<style>
+  :root{
+    --green:#34d399; --green-d:#10b981; --orange:#ff7a45; --ink:#1f2330; --sub:#5b6273;
+    --bg:#eafaf1; --card:#ffffff; --line:#d8efe4; --red:#dc2626;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;height:100%;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    background:linear-gradient(160deg,#eafaf1,#d6f3e4);
+    color:var(--ink);display:flex;flex-direction:column;align-items:center;
+    min-height:100%;padding:14px;
+  }
+  h1{margin:0;font-size:22px;color:var(--green-d);letter-spacing:1px;}
+  .topbar{
+    width:100%;max-width:520px;display:flex;align-items:center;gap:8px;
+    background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:10px 14px;margin-bottom:10px;box-shadow:0 4px 16px rgba(16,185,129,.08);
+  }
+  .topbar .lvl{font-weight:800;font-size:15px;}
+  .topbar .tag{font-size:11px;background:var(--green);color:#fff;padding:2px 8px;border-radius:999px;}
+  .topbar .spacer{flex:1;}
+  .topbar .stat{font-size:13px;color:var(--sub);}
+  .topbar .stat b{color:var(--ink);}
+  .topbar button{
+    border:none;background:#f1f5f9;color:var(--sub);border-radius:10px;
+    padding:6px 10px;font-size:13px;cursor:pointer;font-weight:600;
+  }
+  .topbar button:active{transform:scale(.96);}
+  .stage{position:relative;width:100%;max-width:520px;}
+  canvas{
+    width:100%;height:auto;display:block;background:
+      repeating-linear-gradient(45deg,#bfe9cf 0 10px,#b6e6c6 10px 20px);
+    border:3px solid var(--green-d);border-radius:16px;touch-action:none;
+    box-shadow:0 10px 30px rgba(16,185,129,.18);
+  }
+  .toolbar{
+    width:100%;max-width:520px;display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:10px;
+  }
+  .toolbar button{
+    border:1px solid var(--line);background:var(--card);border-radius:14px;padding:10px 4px;
+    font-size:12px;color:var(--sub);cursor:pointer;font-weight:700;display:flex;flex-direction:column;
+    align-items:center;gap:3px;box-shadow:0 3px 10px rgba(16,185,129,.06);
+  }
+  .toolbar button .ic{font-size:18px;}
+  .toolbar button.active{border-color:var(--orange);color:var(--orange);background:#fff6f1;}
+  .toolbar button:active{transform:scale(.95);}
+  .overlay{
+    position:fixed;inset:0;background:rgba(20,30,25,.55);backdrop-filter:blur(3px);
+    display:none;align-items:center;justify-content:center;padding:20px;z-index:50;
+  }
+  .overlay.show{display:flex;}
+  .modal{
+    background:var(--card);border-radius:20px;padding:26px 24px;width:100%;max-width:380px;
+    text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.25);animation:pop .25s ease;
+  }
+  @keyframes pop{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
+  .modal h2{margin:0 0 6px;font-size:24px;color:var(--green-d);}
+  .modal p{color:var(--sub);font-size:14px;margin:6px 0;}
+  .modal .big{font-size:40px;margin:8px 0;}
+  .modal .stars{font-size:30px;letter-spacing:4px;color:#f59e0b;}
+  .modal button{
+    width:100%;border:none;border-radius:14px;padding:13px;margin-top:10px;font-size:15px;
+    font-weight:800;cursor:pointer;background:var(--green-d);color:#fff;
+  }
+  .modal button.ghost{background:#f1f5f9;color:var(--sub);}
+  .modal button:active{transform:scale(.98);}
+  .lvlgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px;max-height:46vh;overflow:auto;}
+  .lvlbtn{
+    border:1px solid var(--line);background:#fafdfb;border-radius:14px;padding:12px 4px;cursor:pointer;
+    font-weight:800;color:var(--ink);position:relative;
+  }
+  .lvlbtn .d{display:block;font-size:10px;color:var(--sub);font-weight:600;margin-top:2px;}
+  .lvlbtn .s{font-size:11px;color:#f59e0b;}
+  .lvlbtn.locked{opacity:.45;cursor:not-allowed;}
+  .lvlbtn:active{transform:scale(.96);}
+  .hint{font-size:12px;color:var(--sub);margin-top:10px;max-width:520px;text-align:center;line-height:1.6;}
+  .toast{
+    position:fixed;left:50%;top:18%;transform:translateX(-50%);background:rgba(31,35,48,.92);color:#fff;
+    padding:9px 16px;border-radius:999px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:60;
+  }
+  .toast.show{opacity:1;}
+  .diffrow{display:flex;gap:8px;margin-top:14px;}
+  .diffrow button{flex:1;border:1px solid var(--line);background:#fafdfb;border-radius:12px;padding:10px;font-weight:700;cursor:pointer;color:var(--sub);}
+  .diffrow button.active{background:var(--green-d);color:#fff;border-color:var(--green-d);}
+</style>
+</head>
+<body>
+  <h1>🐷 猪了个猪 · 小堵版</h1>
+
+  <div class="topbar" id="topbar" style="display:none">
+    <button id="btnPause">⏸</button>
+    <span class="lvl" id="lvlName">第 1 关</span>
+    <span class="tag" id="lvlDiff">简单</span>
+    <span class="spacer"></span>
+    <span class="stat">步数 <b id="stMoves">0</b></span>
+    <span class="stat" id="stTimeWrap" style="display:none">⏱ <b id="stTime">120</b>s</span>
+    <span class="stat">剩 <b id="stLeft">0</b></span>
+  </div>
+
+  <div class="stage" id="stage" style="display:none">
+    <canvas id="cv" width="520" height="700"></canvas>
+  </div>
+
+  <div class="toolbar" id="toolbar" style="display:none">
+    <button data-tool="undo"><span class="ic">↩️</span>撤销∞</button>
+    <button data-tool="remove"><span class="ic">🗑️</span>移除∞</button>
+    <button data-tool="flip"><span class="ic">🔄</span>翻转∞</button>
+    <button data-tool="shuffle"><span class="ic">🔀</span>洗牌∞</button>
+    <button data-tool="hint"><span class="ic">💡</span>提示∞</button>
+    <button data-tool="restart"><span class="ic">🔁</span>重开</button>
+  </div>
+
+  <p class="hint" id="hint" style="display:none">
+    点哪只动物，它就朝头朝的方向一路跑：被同伴挡住就停下，前方没东西就冲出棋盘（撤退）。把整盘撤空就赢！
+    动物默认 1×2 长条，后期出现 1×3。<b>动物会互相挡路</b>，顺序错了可能卡死——走错了用「撤销」反悔或「重开」。
+  </p>
+
+  <!-- 主菜单 -->
+  <div class="overlay show" id="ovMenu">
+    <div class="modal">
+      <div class="big">🐷🐑🐤</div>
+      <h2>猪了个猪 · 小堵版</h2>
+      <p>点击动物 → 沿朝向滑行 → 全员撤退即通关</p>
+      <div class="diffrow" id="diffRow">
+        <button data-d="easy" class="active">简单</button>
+        <button data-d="normal">普通</button>
+        <button data-d="hard">困难</button>
+        <button data-d="nightmare">噩梦</button>
+      </div>
+      <button id="btnStart">开始游戏（随机关卡）</button>
+      <button class="ghost" id="btnLevels">选择关卡</button>
+    </div>
+  </div>
+
+  <!-- 关卡选择 -->
+  <div class="overlay" id="ovLevels">
+    <div class="modal">
+      <h2>选择关卡</h2>
+      <p>已通关会记录星星 ★</p>
+      <div class="lvlgrid" id="lvlGrid"></div>
+      <button class="ghost" id="btnLvlBack">返回</button>
+    </div>
+  </div>
+
+  <!-- 暂停 -->
+  <div class="overlay" id="ovPause">
+    <div class="modal">
+      <h2>已暂停</h2>
+      <button id="btnResume">继续</button>
+      <button class="ghost" id="btnPauseRestart">重开本关</button>
+      <button class="ghost" id="btnPauseMenu">返回菜单</button>
+    </div>
+  </div>
+
+  <!-- 胜利 -->
+  <div class="overlay" id="ovWin">
+    <div class="modal">
+      <div class="big">🎉</div>
+      <h2>通关啦！</h2>
+      <div class="stars" id="winStars">★★★</div>
+      <p id="winInfo">步数 0 · 用时 0s</p>
+      <button id="btnNext">下一关</button>
+      <button class="ghost" id="btnWinReplay">再玩一次</button>
+      <button class="ghost" id="btnWinMenu">返回菜单</button>
+    </div>
+  </div>
+
+  <!-- 失败（保留但不再触发；休闲模式不会失败） -->
+  <div class="overlay" id="ovLose">
+    <div class="modal">
+      <div class="big">💥</div>
+      <h2>失败</h2>
+      <p id="loseInfo"></p>
+      <button id="btnLoseRetry">重开本关</button>
+      <button class="ghost" id="btnLoseUndo">撤销一步自救</button>
+      <button class="ghost" id="btnLoseMenu">返回菜单</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+/* ===================== 配置 ===================== */
+// 棋盘：长条动物按"格"占用，每格 CELL=42
+const COLS=11, ROWS=16;
+const CELL=42, PAD=9;
+const CW=COLS*CELL+PAD*2, CH=ROWS*CELL+PAD*2;
+const DIRS=[{dr:-1,dc:0},{dr:0,dc:1},{dr:1,dc:0},{dr:0,dc:-1}]; // 0上 1右 2下 3左
+const ANIMALS=['pig','sheep','blackface','chick'];
+// count=动物只数；l3=其中 1×3 数量，其余为 1×2（逆向构造上限约 53~55 只，故按可达值设定）
+const DIFF={
+  easy:    {name:'简单', count:22, l3:0},
+  normal:  {name:'普通', count:38, l3:0},
+  hard:    {name:'困难', count:50, l3:5},
+  nightmare:{name:'噩梦',count:56, l3:8},
+};
+
+/* ===================== 状态 ===================== */
+let cv, ctx;
+let animals=[]; // {id,type,dir,len,row,col,retreated}
+let grid=[];    // grid[r][c] = animal | null（多格共享同一 animal）
+let state='menu';
+let curDiff='easy';
+let curLevelIdx=0;
+let curStars=[0,0,0,0,0];
+let moves=0, startTime=0;
+let tool=null;
+let anim=null;
+let undoStack=[];
+let particles=[];
+
+/* ===================== 基础工具 ===================== */
+const rnd=n=>Math.floor(Math.random()*n);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function cellCenter(r,c){return {x:PAD+c*CELL+CELL/2, y:PAD+r*CELL+CELL/2};}
+function inBounds(r,c){return r>=0&&r<ROWS&&c>=0&&c<COLS;}
+// head 位置 (a.row,a.col) + 长度方向 dir，占据格 = head + 向 -dir 方向延伸 len-1 格
+function cellsOf(a){
+  const dir=DIRS[a.dir];
+  const cells=[];
+  for(let k=0;k<a.len;k++){
+    cells.push([a.row+k*(-dir.dr), a.col+k*(-dir.dc)]);
+  }
+  return cells;
+}
+function clearAnimalFromGrid(a){
+  for(const [r,c] of cellsOf(a)){ if(grid[r] && grid[r][c]===a) grid[r][c]=null; }
+}
+function placeAnimalOnGrid(a){
+  for(const [r,c] of cellsOf(a)) grid[r][c]=a;
+}
+function rebuildGrid(){
+  grid=Array.from({length:ROWS},()=>Array(COLS).fill(null));
+  for(const a of animals){ if(!a.retreated) placeAnimalOnGrid(a); }
+}
+function nearestEdgeDir(r,c){
+  const dt=r, db=ROWS-1-r, dl=c, dr=COLS-1-c;
+  const m=Math.min(dt,db,dl,dr);
+  if(m===dt)return 0; if(m===db)return 2; if(m===dl)return 3; return 1;
+}
+function snapshot(){
+  return { animals: animals.map(a=>({...a})), moves };
+}
+function pushUndo(){ undoStack.push(snapshot()); if(undoStack.length>200) undoStack.shift(); }
+function doUndo(){
+  if(!undoStack.length){ toast('没有可撤销的步骤'); return; }
+  const s=undoStack.pop();
+  animals=s.animals.map(a=>({...a}));
+  moves=s.moves;
+  rebuildGrid(); refreshHUD(); toast('已撤销');
+}
+function toast(msg){
+  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),1100);
+}
+
+/* ===================== 关卡生成（含可通关求解器） ===================== */
+// 计算一只动物在某 grid 上滑动后的结果：
+//   {retreat:true} → 一直滑到出界（整只撤退）
+//   {row,col}      → 撞停的新 head 位置
+//   null           → 完全不能动（紧贴前方一格就被占）
+function slideOutcome(g, a){
+  const dir=DIRS[a.dir];
+  let r=a.row, c=a.col, willRetreat=false, moved=false;
+  while(true){
+    const nr=r+dir.dr, nc=c+dir.dc;
+    if(!inBounds(nr,nc)){ willRetreat=true; moved=true; break; }
+    if(g[nr][nc]) break;
+    r=nr; c=nc; moved=true;
+  }
+  if(!moved) return null;
+  if(willRetreat) return {retreat:true};
+  return {row:r, col:c};
+}
+/* ===================== 关卡生成（逆向构造：保证可解 + 保留互锁） ===================== */
+// 逆向构造：依序放置每只动物，要求其"撤退路径"（head 沿朝向到棋盘边）上没有任何同伴身体占用。
+// 放置顺序 = 撤退顺序的反序。于是从最后放置(最先撤退)的动物开始，依次都能在"后撤的同伴已不在场上"时畅通撤退 → 整盘必有解。
+// 同时：后放置动物的身体可以压在先放置动物的路径上 → 形成互锁（顺序错了就卡死），这正是解谜乐趣所在。
+function genReverse(want, wantL3){
+  const arr=[];
+  const occ=Array.from({length:ROWS},()=>Array(COLS).fill(false));
+  let aid=0;
+  // 先决定每只动物的种类与长度
+  const specs=[];
+  for(let i=0;i<want;i++){
+    const useL3 = wantL3>0 && specs.filter(s=>s.len===3).length<wantL3 && Math.random()<0.3;
+    specs.push({type:ANIMALS[rnd(ANIMALS.length)], len: useL3?3:2});
+  }
+  // 放置：朝向完全随机 → 产生朝向各异、互相阻挡的布局；能放几只放几只
+  let queue=specs.slice();
+  let safety=0;
+  while(queue.length && safety<want*40){
+    safety++;
+    const spec=queue.shift();
+    let placed=false;
+    for(let t=0;t<160 && !placed;t++){
+      const r=rnd(ROWS), c=rnd(COLS);
+      const dir=rnd(4);                 // 完全随机朝向 → 互锁
+      const dv=DIRS[dir];
+      const cells=[]; let ok=true;
+      for(let k=0;k<spec.len;k++){
+        const rr=r+k*(-dv.dr), cc=c+k*(-dv.dc);
+        if(!inBounds(rr,cc) || occ[rr][cc]){ ok=false; break; }
+        cells.push([rr,cc]);
+      }
+      if(!ok) continue;
+      // path 必须空出（沿 +dir 直到边界，不踩已放置同伴）
+      for(let s=1;s<Math.max(ROWS,COLS);s++){
+        const nr=r+dv.dr*s, nc=c+dv.dc*s;
+        if(!inBounds(nr,nc)) break;
+        if(occ[nr][nc]){ ok=false; break; }
+      }
+      if(!ok) continue;
+      for(const [rr,cc] of cells) occ[rr][cc]=true;
+      arr.push({id:aid++, type:spec.type, len:spec.len, dir, row:r, col:c, retreated:false});
+      placed=true;
+    }
+    if(!placed) queue.push(spec); // 暂放不下的留到后面（棋盘变化后可能放得下）
+  }
+  return arr;
+}
+function genLevel(diffKey){
+  const d=DIFF[diffKey];
+  // 逆向构造本身就可解；多试几次取"放得最多"的一盘，密度更稳
+  let best=null;
+  for(let attempt=0; attempt<12; attempt++){
+    const arr=genReverse(d.count, d.l3);
+    if(!best || arr.length>best.length) best=arr;
+    if(arr.length>=Math.floor(d.count*0.95)){ animals=arr; rebuildGrid(); return; }
+  }
+  animals=best||[];
+  rebuildGrid();
+}
+
+/* ===================== 提示 & 死局检测（基于求解器） ===================== */
+let hintedId=-1, hintTimer=0;
+// 在"当前局面"上跑一遍求解，返回"通往通关的第一步该点的动物 id"；若当前已无解则返回 null。
+// 算法：贪心先把所有"能直接出界"的动物撤走（这一步无分支，且永不损害可解性），
+//       之后若仍有人在场，说明必须移动某个挡路者，再分支搜索。带状态去重。
+function solveFirstMove(){
+  const live=animals.map(a=>({...a, retreated:!!a.retreated}));
+  const g=Array.from({length:ROWS},()=>Array(COLS).fill(null));
+  for(const a of live) for(const [r,c] of cellsOf(a)) g[r][c]=a;
+  const seen=new Set();
+  let firstId=null;
+  const key=()=>live.filter(a=>!a.retreated).map(a=>`${a.len}|${a.dir}|${a.row},${a.col}`).sort().join(';');
+  function dfs(budget){
+    if(nodes>budget) return null;
+    let changed=true;
+    while(changed){
+      changed=false;
+      for(const a of live){ if(a.retreated)continue; const o=slideOutcome(g,a); if(o&&o.retreat){ if(firstId===null)firstId=a.id; a.retreated=true; for(const [r,c] of cellsOf(a))g[r][c]=null; changed=true; } }
+    }
+    const active=live.filter(a=>!a.retreated);
+    if(active.length===0) return true;
+    const k=key(); if(seen.has(k)) return false; seen.add(k);
+    for(const a of active){
+      const o=slideOutcome(g,a); if(!o||o.retreat) continue;
+      if(firstId===null) firstId=a.id;
+      const saved={row:a.row,col:a.col};
+      for(const [r,c] of cellsOf(a))g[r][c]=null; a.row=o.row;a.col=o.col; for(const [r,c] of cellsOf(a))g[r][c]=a;
+      const r=dfs(budget); if(r===true)return true; if(r===null)return null;
+      for(const [r,c] of cellsOf(a))g[r][c]=null; a.row=saved.row;a.col=saved.col; for(const [r,c] of cellsOf(a))g[r][c]=a;
+    }
+    return false;
+  }
+  let nodes=0;
+  return dfs(150000) ? firstId : null;
+}
+// 提示策略（稳健、不依赖求解器正确性）：
+//   1) 优先提示"当下能直接撤退"的动物——这一步永远安全（只释放空间，绝不会让局面更糟）；
+//   2) 若谁都撤不出去，再用求解器找一个能解锁更多撤退的挡路者；
+//   3) 再不行就提示任意能动的一只，让玩家试着挪开。
+function findHint(){
+  for(const a of animals){
+    if(a.retreated) continue;
+    const o=slideOutcome(grid,a);
+    if(o && o.retreat) return a;
+  }
+  const id=solveFirstMove();
+  if(id!==null) return animals.find(a=>a.id===id && !a.retreated) || null;
+  for(const a of animals){
+    if(a.retreated) continue;
+    if(slideOutcome(grid,a)) return a;
+  }
+  return null;
+}
+// 当前是否还有任何动物能动（撞停/撤退都算"能动"）
+function anyMovePossible(){
+  for(const a of animals){ if(a.retreated) continue; if(slideOutcome(grid,a)) return true; }
+  return false;
+}
+// 一步走完后的统一收尾：判胜 / 判硬死局（不再用求解器断言"无解"，避免误报）
+function afterMove(){
+  refreshHUD();
+  if(animals.every(a=>a.retreated)){ win(); return; }
+  if(!anyMovePossible()){
+    toast('💡 死局了！没有能动的动物，撤销一步或重开本关');
+  }
+}
+
+/* ===================== 核心：滑行（长条） ===================== */
+function slideAnimal(a){
+  if(anim) return;
+  const dir=DIRS[a.dir];
+  let r=a.row, c=a.col, willRetreat=false;
+  while(true){
+    const nr=r+dir.dr, nc=c+dir.dc;
+    if(!inBounds(nr,nc)){ willRetreat=true; break; }
+    if(grid[nr][nc]) break; // 被任一只动物的任一格挡住
+    r=nr; c=nc;
+  }
+  // 没动 & 不是原地就出界 → 撞停
+  if(r===a.row && c===a.col && !willRetreat){
+    a.shake=performance.now(); playBump(); return;
+  }
+  pushUndo(); moves++;
+  const fromHead=cellCenter(a.row, a.col);
+  const toHead = willRetreat
+    ? { x: fromHead.x + dir.dc*CELL*a.len*0.8, y: fromHead.y + dir.dr*CELL*a.len*0.8 }
+    : cellCenter(r, c);
+  clearAnimalFromGrid(a);
+  if(willRetreat){
+    a.retreated=true;
+  } else {
+    a.row=r; a.col=c;
+    placeAnimalOnGrid(a);
+  }
+  const dist=Math.hypot(toHead.x-fromHead.x, toHead.y-fromHead.y);
+  const dur=clamp(dist*0.9, 140, 520);
+  anim={a, fromHead, toHead, start:performance.now(), dur};
+  playSlide(); refreshHUD();
+  anim.onEnd=()=>{
+    afterMove();
+  };
+}
+
+/* ===================== 道具 ===================== */
+function applyTool(tool, cellR, cellC, target){
+  if(tool==='undo'){ doUndo(); return; }
+  if(tool==='restart'){ restart(); return; }
+  if(tool==='shuffle'){
+    pushUndo();
+    const live=animals.filter(a=>!a.retreated);
+    // 收集所有空格（按当前非占用的格）
+    const empty=[];
+    for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++) if(!grid[r][c]) empty.push([r,c]);
+    if(empty.length<live.length){ toast('空间不足，无法洗牌'); return; }
+    // 随机重排位置+朝向+长度
+    for(const a of live){
+      const idx=rnd(empty.length);
+      a.row=empty[idx][0]; a.col=empty[idx][1]; empty.splice(idx,1);
+      a.dir=rnd(4);
+      a.len = (DIFF[curDiff].l3>0 && Math.random()<0.15) ? 3 : 2;
+    }
+    rebuildGrid(); playShuffle(); toast('已洗牌'); refreshHUD();
+    return;
+  }
+  if(tool==='remove'){
+    if(!target) return;
+    pushUndo(); clearAnimalFromGrid(target); target.retreated=true;
+    playSlide(); toast('已移除'); afterMove();
+    return;
+  }
+  if(tool==='flip'){
+    if(!target) return;
+    // 翻转 180°：保持 head 位置不变，身体方向反转
+    const newDir=(target.dir+2)%4;
+    const dirVec=DIRS[newDir];
+    const ownCells=cellsOf(target);
+    let ok=true;
+    for(let k=0;k<target.len;k++){
+      const rr=target.row+k*(-dirVec.dr), cc=target.col+k*(-dirVec.dc);
+      if(!inBounds(rr,cc)){ ok=false; break; }
+      const isOwn=ownCells.some(([r,c])=>r===rr&&c===cc);
+      if(!isOwn && grid[rr][cc]){ ok=false; break; }
+    }
+    if(!ok){ toast('翻转空间不足'); return; }
+    pushUndo();
+    clearAnimalFromGrid(target);
+    target.dir=newDir;
+    placeAnimalOnGrid(target);
+    playBump(); toast('已翻转'); afterMove();
+    return;
+  }
+}
+
+/* ===================== 渲染 ===================== */
+function draw(){
+  if(!ctx) return;
+  ctx.clearRect(0,0,CW,CH);
+  ctx.strokeStyle='rgba(16,185,129,.12)'; ctx.lineWidth=1;
+  for(let c=0;c<=COLS;c++){ctx.beginPath();ctx.moveTo(PAD+c*CELL,PAD);ctx.lineTo(PAD+c*CELL,PAD+ROWS*CELL);ctx.stroke();}
+  for(let r=0;r<=ROWS;r++){ctx.beginPath();ctx.moveTo(PAD,PAD+r*CELL);ctx.lineTo(PAD+COLS*CELL,PAD+r*CELL);ctx.stroke();}
+
+  const now=performance.now();
+  for(const a of animals){
+    if(a.retreated && !(anim && anim.a===a)) continue;
+    let hx, hy;
+    if(anim && anim.a===a){
+      const t=clamp((now-anim.start)/anim.dur,0,1);
+      const e=1-Math.pow(1-t,3);
+      hx=anim.fromHead.x+(anim.toHead.x-anim.fromHead.x)*e;
+      hy=anim.fromHead.y+(anim.toHead.y-anim.fromHead.y)*e;
+    } else {
+      const ctr=cellCenter(a.row,a.col); hx=ctr.x; hy=ctr.y;
+      if(a.shake && now-a.shake<260){
+        const k=(now-a.shake)/260; hx+=(Math.random()-0.5)*6*(1-k);
+      } else a.shake=0;
+    }
+    drawAnimal(ctx, hx, hy, a, now);
+    // 提示高亮：画一圈脉动发光环
+    if(a.id===hintedId){
+      const unit=CELL-6;
+      const r = unit*Math.max(a.len, 1)*0.55;
+      ctx.save();
+      ctx.translate(hx, hy);
+      const pulse = 0.5 + 0.5*Math.sin(now/180);
+      ctx.strokeStyle = `rgba(255,122,69,${0.55 + 0.35*pulse})`;
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.arc(0,0,r,0,7);
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+  for(const p of particles){
+    ctx.globalAlpha=clamp(p.life,0,1);
+    ctx.fillStyle=p.color;
+    ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,7);ctx.fill();
+  }
+  ctx.globalAlpha=1;
+  requestAnimationFrame(draw);
+}
+
+// 基准绘制：head 在原点 (0,0)，身体沿 -X 延伸到 -L，长度 L=a.len*(CELL-6)
+function drawAnimal(g, cx, cy, a, now){
+  const unit=CELL-6;
+  const L=a.len*unit;
+  const angle=[270,0,90,180][a.dir]*Math.PI/180;
+  g.save();
+  g.translate(cx, cy);
+  g.rotate(angle);
+  if(tool==='remove' || tool==='flip'){ g.shadowColor='rgba(255,122,69,.9)'; g.shadowBlur=10; }
+  const cxBody=-L/2+unit/2;
+  if(a.type==='pig'){
+    g.fillStyle='#ffb3c8'; ellipse(g,cxBody,0,L*0.46,unit*0.42);
+    g.fillStyle='#ff8fab'; ellipse(g,-L*0.30,-unit*0.22,unit*0.16,unit*0.14);
+    g.fillStyle='#ff8fab'; ellipse(g,-L*0.30,unit*0.22,unit*0.16,unit*0.14);
+    g.fillStyle='#ff7aa0'; ellipse(g,-unit*0.10,0,unit*0.22,unit*0.16);
+    g.fillStyle='#c94f73'; ellipse(g,-unit*0.10,-unit*0.05,unit*0.03,unit*0.04);
+    g.fillStyle='#c94f73'; ellipse(g,-unit*0.10,unit*0.05,unit*0.03,unit*0.04);
+    eye(g,-unit*0.40,-unit*0.12); eye(g,-unit*0.40,unit*0.12);
+  } else if(a.type==='sheep'){
+    g.fillStyle='#f4f6fb'; ellipse(g,cxBody,0,L*0.44,unit*0.42);
+    g.fillStyle='#f4f6fb'; ellipse(g,cxBody-unit*0.20,-unit*0.30,unit*0.18,unit*0.16);
+    g.fillStyle='#f4f6fb'; ellipse(g,cxBody-unit*0.20,unit*0.30,unit*0.18,unit*0.16);
+    g.fillStyle='#3b3f4a'; ellipse(g,-unit*0.05,0,unit*0.24,unit*0.20);
+    eye(g,-unit*0.05,-unit*0.07,'#fff'); eye(g,-unit*0.05,unit*0.07,'#fff');
+  } else if(a.type==='blackface'){
+    g.fillStyle='#eef1f6'; ellipse(g,cxBody,0,L*0.44,unit*0.42);
+    g.fillStyle='#4b5160'; ellipse(g,-L*0.20,-unit*0.26,unit*0.12,unit*0.10);
+    g.fillStyle='#4b5160'; ellipse(g,-L*0.20,unit*0.26,unit*0.12,unit*0.10);
+    g.fillStyle='#1f2430'; ellipse(g,-unit*0.05,0,unit*0.32,unit*0.28);
+    eye(g,-unit*0.05,-unit*0.07,'#fff'); eye(g,-unit*0.05,unit*0.07,'#fff');
+  } else { // chick
+    g.fillStyle='#ffd84a'; ellipse(g,cxBody,0,L*0.46,unit*0.44);
+    g.fillStyle='#ff9d2e'; triangle(g,unit*0.20,0,unit*0.22,unit*0.14);
+    g.fillStyle='#ff5a5a'; ellipse(g,-L*0.10,-unit*0.32,unit*0.10,unit*0.12);
+    eye(g,-unit*0.30,-unit*0.10); eye(g,-unit*0.30,unit*0.10);
+  }
+  g.shadowBlur=0;
+  g.restore();
+}
+function ellipse(g,x,y,rx,ry){g.beginPath();g.ellipse(x,y,rx,ry,0,0,7);g.fill();}
+function eye(g,x,y,c){
+  g.fillStyle=c||'#1f2430'; g.beginPath();g.arc(x,y,unit()*0.05,0,7);g.fill();
+  if(!c){ g.fillStyle='#fff'; g.beginPath();g.arc(x-unit()*0.015,y-unit()*0.015,unit()*0.018,0,7); g.fill(); }
+}
+function triangle(g,x,y,w,h){g.beginPath();g.moveTo(x,y-h/2);g.lineTo(x+w,y);g.lineTo(x,y+h/2);g.closePath();g.fill();}
+function unit(){ return CELL-6; }
+
+/* ===================== 音频（Web Audio 合成） ===================== */
+let actx=null;
+function ac(){ if(!actx) actx=new (window.AudioContext||window.webkitAudioContext)(); return actx; }
+function tone(freq,dur,type,vol){ try{const c=ac();const o=c.createOscillator(),g=c.createGain();
+  o.type=type||'sine';o.frequency.value=freq;g.gain.value=vol||.12;
+  o.connect(g);g.connect(c.destination);o.start();g.gain.exponentialRampToValueAtTime(.0001,c.currentTime+dur);
+  o.stop(c.currentTime+dur);}catch(e){} }
+function playSlide(){ tone(520,.08,'square',.08); setTimeout(()=>tone(680,.07,'square',.06),60); }
+function playBump(){ tone(140,.12,'sawtooth',.12); }
+function playWin(){ [523,659,784,1047].forEach((f,i)=>setTimeout(()=>tone(f,.18,'triangle',.12),i*110)); }
+function playShuffle(){ tone(300,.1,'sine',.1); setTimeout(()=>tone(420,.1,'sine',.08),80); }
+
+/* ===================== 粒子 ===================== */
+function burst(x,y,color,n){ for(let i=0;i<n;i++){const a=Math.random()*7,sp=2+Math.random()*4;
+  particles.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,r:2+Math.random()*3,life:1,color});} }
+function stepParticles(){ for(const p of particles){p.x+=p.vx;p.y+=p.vy;p.vy+=.15;p.life-=0.02;}
+  particles=particles.filter(p=>p.life>0); }
+
+/* ===================== 流程 ===================== */
+function startLevel(diffKey, levelIdx){
+  curDiff=diffKey; curLevelIdx=(levelIdx===undefined?-1:levelIdx);
+  genLevel(diffKey);
+  moves=0; undoStack=[]; particles=[]; tool=null; hintedId=-1; clearTimeout(hintTimer);
+  setToolUI();
+  document.getElementById('lvlName').textContent = levelIdx>=0?`第 ${levelIdx+1} 关`:'随机关卡';
+  document.getElementById('lvlDiff').textContent = DIFF[diffKey].name;
+  document.getElementById('stTimeWrap').style.display='none';
+  showGame();
+  state='playing'; startTime=performance.now();
+  refreshHUD();
+}
+function showGame(){
+  document.getElementById('ovMenu').classList.remove('show');
+  document.getElementById('ovLevels').classList.remove('show');
+  document.getElementById('topbar').style.display='flex';
+  document.getElementById('stage').style.display='block';
+  document.getElementById('toolbar').style.display='grid';
+  document.getElementById('hint').style.display='block';
+}
+function refreshHUD(){
+  document.getElementById('stMoves').textContent=moves;
+  document.getElementById('stLeft').textContent=animals.filter(a=>!a.retreated).length;
+}
+function win(){
+  state='win';
+  playWin();
+  for(let i=0;i<40;i++)burst(PAD+Math.random()*COLS*CELL,PAD+Math.random()*ROWS*CELL,['#ff7a45','#34d399','#fbbf24'][rnd(3)],1);
+  const t=Math.round((performance.now()-startTime)/1000);
+  const c=DIFF[curDiff].count;
+  const stars = moves< c*0.6 ? 3 : moves<c? 2 : 1;
+  document.getElementById('winStars').textContent='★'.repeat(stars)+'☆'.repeat(3-stars);
+  document.getElementById('winInfo').textContent=`步数 ${moves} · 用时 ${t}s`;
+  if(curLevelIdx>=0) curStars[curLevelIdx]=Math.max(curStars[curLevelIdx],stars);
+  document.getElementById('ovWin').classList.add('show');
+}
+function restart(){
+  if(curLevelIdx>=0) startLevel(curDiff,curLevelIdx);
+  else {
+    genLevel(curDiff); moves=0; undoStack=[]; particles=[]; tool=null; hintedId=-1; clearTimeout(hintTimer);
+    setToolUI();
+    state='playing'; startTime=performance.now(); refreshHUD();
+  }
+  toast('已重开');
+}
+function setToolUI(){
+  document.querySelectorAll('.toolbar button').forEach(b=>{
+    b.classList.toggle('active', b.dataset.tool===tool);
+  });
+}
+function backToMenu(){
+  state='menu';
+  document.getElementById('ovMenu').classList.add('show');
+  document.getElementById('topbar').style.display='none';
+  document.getElementById('stage').style.display='none';
+  document.getElementById('toolbar').style.display='none';
+  document.getElementById('hint').style.display='none';
+}
+
+/* ===================== 输入 ===================== */
+function cellFromEvent(e){
+  const rect=cv.getBoundingClientRect();
+  const scaleX=cv.width/rect.width, scaleY=cv.height/rect.height;
+  const px=(e.clientX-rect.left)*scaleX, py=(e.clientY-rect.top)*scaleY;
+  const c=Math.floor((px-PAD)/CELL), r=Math.floor((py-PAD)/CELL);
+  if(!inBounds(r,c)) return null;
+  return {r,c};
+}
+function onTap(e){
+  if(state!=='playing' || anim) return;
+  if(actx && actx.state==='suspended') actx.resume();
+  const pos=cellFromEvent(e); if(!pos) return;
+  const a=grid[pos.r][pos.c];
+  if(tool==='undo'){ doUndo(); return; }
+  if(tool==='restart'){ restart(); return; }
+  if(tool==='shuffle'){ applyTool('shuffle'); tool=null; setToolUI(); return; }
+  if(tool==='hint'){ applyInstantTool('hint'); tool=null; setToolUI(); return; }
+  if(tool==='remove' || tool==='flip'){
+    if(a) applyTool(tool, pos.r, pos.c, a);
+    else toast('点一只动物');
+    return;
+  }
+    if(a) slideAnimal(a);
+}
+/* 处理仅作工具用的按钮（不需点动物） */
+function applyInstantTool(t){
+  if(t==='undo'){ doUndo(); }
+  else if(t==='restart'){ restart(); }
+  else if(t==='shuffle'){
+    applyTool('shuffle');
+  } else if(t==='hint'){
+    const a = findHint();
+    if(!a){ toast('暂时没思路，撤销一步或换只动物试试'); return; }
+    hintedId = a.id;
+    clearTimeout(hintTimer);
+    hintTimer = setTimeout(()=>{hintedId = -1;}, 1500);
+    toast('这一步点这一只');
+  }
+}
+
+/* ===================== 绑定 ===================== */
+window.addEventListener('DOMContentLoaded',()=>{
+  cv=document.getElementById('cv'); cv.width=CW; cv.height=CH; ctx=cv.getContext('2d');
+  cv.addEventListener('pointerdown', onTap);
+  document.querySelectorAll('#diffRow button').forEach(b=>{
+    b.onclick=()=>{
+      document.querySelectorAll('#diffRow button').forEach(x=>x.classList.remove('active'));
+      b.classList.add('active'); curDiff=b.dataset.d;
+    };
+  });
+  document.getElementById('btnStart').onclick=()=>startLevel(curDiff,-1);
+  document.getElementById('btnLevels').onclick=()=>{ buildLevelGrid(); document.getElementById('ovLevels').classList.add('show'); };
+  document.getElementById('btnLvlBack').onclick=()=>document.getElementById('ovLevels').classList.remove('show');
+  document.querySelectorAll('.toolbar button').forEach(b=>{
+    b.onclick=()=>{
+      const t=b.dataset.tool;
+      if(t==='undo'){ doUndo(); return; }
+      if(t==='restart'){ restart(); return; }
+      if(t==='hint'){ applyInstantTool('hint'); return; }
+      tool=(tool===t)?null:t; setToolUI();
+      toast(tool?({remove:'移除：点动物移除',flip:'翻转：点动物转向',shuffle:'洗牌：立即重排'}[t]):'已取消工具');
+    };
+  });
+  document.getElementById('btnPause').onclick=()=>{ state='paused'; document.getElementById('ovPause').classList.add('show'); };
+  document.getElementById('btnResume').onclick=()=>{ state='playing'; document.getElementById('ovPause').classList.remove('show'); };
+  document.getElementById('btnPauseRestart').onclick=()=>{ document.getElementById('ovPause').classList.remove('show'); restart(); };
+  document.getElementById('btnPauseMenu').onclick=()=>backToMenu();
+  document.getElementById('btnNext').onclick=()=>{ document.getElementById('ovWin').classList.remove('show'); startLevel(curDiff, curLevelIdx>=0?curLevelIdx+1:-1); };
+  document.getElementById('btnWinReplay').onclick=()=>{ document.getElementById('ovWin').classList.remove('show'); restart(); };
+  document.getElementById('btnWinMenu').onclick=()=>{ document.getElementById('ovWin').classList.remove('show'); backToMenu(); };
+  document.getElementById('btnLoseRetry').onclick=()=>{ document.getElementById('ovLose').classList.remove('show'); restart(); };
+  document.getElementById('btnLoseMenu').onclick=()=>{ document.getElementById('ovLose').classList.remove('show'); backToMenu(); };
+  setInterval(stepParticles,16);
+  requestAnimationFrame(draw);
+});
+function buildLevelGrid(){
+  const g=document.getElementById('lvlGrid'); g.innerHTML='';
+  for(let i=0;i<5;i++){
+    const b=document.createElement('div'); b.className='lvlbtn';
+    const d=['简单','普通','困难','噩梦','噩梦'][i];
+    const diffKey=['easy','normal','hard','nightmare','nightmare'][i];
+    b.innerHTML=`<div>${i+1}</div><span class="d">${d}</span><span class="s">${'★'.repeat(curStars[i])}</span>`;
+    b.onclick=()=>{ document.getElementById('ovLevels').classList.remove('show'); startLevel(diffKey,i); };
+    g.appendChild(b);
+  }
+}
+(function watchAnim(){ setInterval(()=>{
+  if(anim && performance.now()-anim.start>=anim.dur){
+    const cb=anim.onEnd; anim=null; if(cb) cb();
+  }
+},30); })();
+</script>
+</body>
+</html>
